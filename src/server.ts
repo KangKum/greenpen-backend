@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json()); // JSON 파싱
-app.use(express.static(path.join(__dirname, "../front-dist"))); // 또는 "dist"
 
 let userCollection;
 let worryLetterCollection;
@@ -252,10 +251,6 @@ app.get("/levelUp/:anonId", async (req, res) => {
     await userCollection.updateOne({ anonId }, { $inc: { point: -pointsRequired[currentLevel + 1] } });
     res.status(200).json({ message: "레벨업 성공" });
   }
-});
-
-app.use((req, res, next) => {
-  res.sendFile(path.join(__dirname, "../front-dist", "index.html"));
 });
 
 async function startServer() {
