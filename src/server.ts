@@ -9,6 +9,7 @@ dotenv.config();
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri);
 const app = express();
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json()); // JSON 파싱
@@ -270,8 +271,8 @@ async function startServer() {
     // 도배 방지를 위한 인덱스 생성 (한 번만 실행)
     await worryLetterCollection.createIndex({ anonId: 1, writtenDate: -1 });
 
-    app.listen(8080, () => {
-      console.log("🚀 Server running on http://localhost:8080");
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (err) {
     console.error("MongoDB 연결 실패:", err);
