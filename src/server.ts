@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
-import path from "path";
 
 dotenv.config();
 
@@ -11,7 +10,15 @@ const client = new MongoClient(uri);
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.use(cors());
+const allowedOrigins = ["https://greenpen.vercel.app"];
+// const allowedOrigins = ["http://localhost:5173", "https://greenpen.vercel.app"];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 app.use(express.json()); // JSON 파싱
 
 let userCollection;
