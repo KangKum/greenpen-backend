@@ -172,8 +172,8 @@ app.get("/worry/:worryId", async (req, res) => {
 // });
 
 // 좋아요 토글 (최적화 버전)
-app.post("/worry/like", async (req, res) => {
-  const { commentId, anonId } = req.body;
+app.post("/worry/like/:commentId/:anonId", async (req, res) => {
+  const { commentId, anonId } = req.params;
 
   try {
     // 1️⃣ 필요한 데이터만 가져오기 (likes, 작성자 anonId)
