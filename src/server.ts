@@ -139,37 +139,79 @@ app.get("/worry/:worryId", async (req, res) => {
 });
 
 // 좋아요 토글
-app.get("/worry/like/:commentId/:anonId", async (req, res) => {
-  const { commentId, anonId } = req.params;
+// app.get("/worry/like/:commentId/:anonId", async (req, res) => {
+//   const { commentId, anonId } = req.params;
+
+//   try {
+//     const comment = await worryLetterCommentsCollection.findOne({ _id: new ObjectId(commentId) });
+//     const writer = comment.anonId;
+
+//     if (!comment) {
+//       return res.status(404).json({ error: "댓글을 찾을 수 없습니다." });
+//     }
+
+//     if (comment.likes && comment.likes.includes(anonId)) {
+//       // 이미 좋아요를 눌렀으면 제거
+//       await worryLetterCommentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $pull: { likes: anonId } });
+//       if (writer !== anonId) {
+//         await userCollection.updateOne({ anonId: writer }, { $inc: { point: -2 } }, { upsert: true });
+//       }
+//       res.status(200).json({ message: "좋아요 취소" });
+//     } else {
+//       // 없으면 추가
+//       await worryLetterCommentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $addToSet: { likes: anonId } });
+//       if (writer !== anonId) {
+//         await userCollection.updateOne({ anonId: writer }, { $inc: { point: 2 } }, { upsert: true });
+//       }
+
+//       res.status(200).json({ message: "좋아요 처리 성공" });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ error: "좋아요 처리 실패" });
+//   }
+// });
+
+// 좋아요 토글 (최적화 버전)
+app.post("/worry/like", async (req, res) => {
+  const { commentId, anonId } = req.body;
 
   try {
-    const comment = await worryLetterCommentsCollection.findOne({ _id: new ObjectId(commentId) });
-    const writer = comment.anonId;
+    // 1️⃣ 필요한 데이터만 가져오기 (likes, 작성자 anonId)
+    const comment = await worryLetterCommentsCollection.findOne(
+      { _id: new ObjectId(commentId) },
+      { projection: { likes: 1, anonId: 1 } } // 불필요한 데이터 제외
+    );
 
     if (!comment) {
       return res.status(404).json({ error: "댓글을 찾을 수 없습니다." });
     }
 
-    if (comment.likes && comment.likes.includes(anonId)) {
-      // 이미 좋아요를 눌렀으면 제거
-      await worryLetterCommentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $pull: { likes: anonId } });
-      if (writer !== anonId) {
-        await userCollection.updateOne({ anonId: writer }, { $inc: { point: -2 } }, { upsert: true });
-      }
-      res.status(200).json({ message: "좋아요 취소" });
-    } else {
-      // 없으면 추가
-      await worryLetterCommentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $addToSet: { likes: anonId } });
-      if (writer !== anonId) {
-        await userCollection.updateOne({ anonId: writer }, { $inc: { point: 2 } }, { upsert: true });
-      }
+    const writer = comment.anonId;
+    const hasLiked = comment.likes?.includes(anonId);
 
-      res.status(200).json({ message: "좋아요 처리 성공" });
+    // 2️⃣ 좋아요 추가 / 제거 쿼리
+    const updateQuery = hasLiked ? { $pull: { likes: anonId } } : { $addToSet: { likes: anonId } };
+
+    // 3️⃣ 댓글 업데이트
+    await worryLetterCommentsCollection.updateOne({ _id: new ObjectId(commentId) }, updateQuery);
+
+    // 4️⃣ 작성자 포인트 업데이트
+    if (writer !== anonId) {
+      await userCollection.updateOne({ anonId: writer }, { $inc: { point: hasLiked ? -2 : 2 } });
     }
+
+    // 5️⃣ 프론트가 즉시 UI 업데이트할 수 있도록 필요한 정보만 반환
+    res.status(200).json({
+      message: hasLiked ? "좋아요 취소" : "좋아요 성공",
+      liked: !hasLiked,
+      commentId,
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "좋아요 처리 실패" });
   }
 });
+
 // 싫어요 토글
 app.get("/worry/dislike/:commentId/:anonId", async (req, res) => {
   const { commentId, anonId } = req.params;
