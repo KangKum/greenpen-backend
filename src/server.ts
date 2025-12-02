@@ -20,6 +20,13 @@ app.use(
   })
 );
 app.use(express.json()); // JSON 파싱
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://greenpen.co.kr");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 
 let userCollection;
 let worryLetterCollection;
