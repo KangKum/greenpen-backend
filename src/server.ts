@@ -137,7 +137,7 @@ app.get("/worry/:worryId", async (req, res) => {
   }
 });
 
-// 좋아요 토글 (최적화 버전)
+// 좋아요 토글 (최적화)
 app.post("/worry/like/:commentId/:anonId", async (req, res) => {
   const { commentId, anonId } = req.params;
 
