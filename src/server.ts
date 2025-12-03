@@ -10,8 +10,9 @@ const client = new MongoClient(uri);
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-const allowedOrigins = ["https://greenpen.co.kr"];
+// const allowedOrigins = ["https://greenpen.co.kr"];
 // const allowedOrigins = ["http://localhost:5173", "https://greenpen.co.kr"];
+const allowedOrigins = process.env.NODE_ENV === "production" ? ["https://greenpen.co.kr"] : ["http://localhost:5173", "https://greenpen.co.kr"];
 
 app.use(
   cors({
