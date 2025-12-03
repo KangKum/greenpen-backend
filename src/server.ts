@@ -79,14 +79,27 @@ app.post("/writing", async (req, res) => {
   }
 });
 //글 조회
+// app.get("/listening", async (req, res) => {
+//   try {
+//     const letters = await worryLetterCollection.find({}).sort({ writtenDate: -1 }).toArray();
+//     res.status(200).json(letters);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to fetch entries" });
+//   }
+// });
 app.get("/listening", async (req, res) => {
   try {
-    const letters = await worryLetterCollection.find({}).sort({ writtenDate: -1 }).toArray();
+    // const skip = typeof req.query.skip === "string" ? parseInt(req.query.skip) : 0;
+    const limit = typeof req.query.limit === "string" ? parseInt(req.query.limit) : 48;
+    // const letters = await worryLetterCollection.find({}).sort({ writtenDate: -1 }).skip(skip).limit(limit).toArray();
+    const letters = await worryLetterCollection.find({}).sort({ writtenDate: -1 }).limit(limit).toArray();
+
     res.status(200).json(letters);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch entries" });
   }
 });
+
 //글 열기
 app.get("/thisWorry/:worryId", async (req, res) => {
   try {
@@ -129,8 +142,10 @@ app.post("/worry", async (req, res) => {
 //해당 댓글 조회
 app.get("/worry/:worryId", async (req, res) => {
   const { worryId } = req.params;
+
   try {
-    const comments = await worryLetterCommentsCollection.find({ worryId }).sort({ commentTime: -1 }).toArray();
+    const limit = typeof req.query.limit === "string" ? parseInt(req.query.limit) : 10;
+    const comments = await worryLetterCommentsCollection.find({ worryId }).sort({ commentTime: -1 }).limit(limit).toArray();
     res.status(200).json(comments);
   } catch (error) {
     res.status(500).json({ error: "댓글 조회 실패" });
