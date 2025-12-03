@@ -21,13 +21,6 @@ app.use(
   })
 );
 app.use(express.json()); // JSON 파싱
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "https://greenpen.co.kr");
-//   res.header("Access-Control-Allow-Credentials", "true");
-//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-//   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
 
 let userCollection;
 let worryLetterCollection;
@@ -353,7 +346,7 @@ async function startServer() {
     worryLetterCommentsCollection = db.collection("worryLetterComments"); // 예: "worryLetterComments"
 
     // 도배 방지를 위한 인덱스 생성 (한 번만 실행)
-    await worryLetterCollection.createIndex({ anonId: 1, writtenDate: -1 });
+    await worryLetterCollection.createIndex({ writtenDate: -1 });
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
