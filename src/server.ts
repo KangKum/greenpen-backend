@@ -21,21 +21,17 @@ app.use(
   })
 );
 app.use(express.json()); // JSON 파싱
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://greenpen.co.kr");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "https://greenpen.co.kr");
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+//   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//   next();
+// });
 
 let userCollection;
 let worryLetterCollection;
 let worryLetterCommentsCollection;
-
-// app.get("/", (req, res) => {
-//   res.send("서버가 정상적으로 동작 중입니다!");
-// });
 
 //자동 회원가입
 app.post("/autoSignup", async (req, res) => {
