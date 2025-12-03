@@ -280,25 +280,40 @@ app.post("/worry/dislike/:commentId/:anonId", async (req, res) => {
 // 공감 토글
 app.post("/worry/:worryId/:anonId", async (req, res) => {
   const { worryId, anonId } = req.params;
-  const letter = await worryLetterCollection.findOne({ _id: new ObjectId(worryId) });
-  const writer = letter.anonId;
 
-  if (letter.attention.includes(anonId)) {
-    // 이미 공감한 상태이면 제거
-    await worryLetterCollection.updateOne({ _id: new ObjectId(worryId) }, { $pull: { attention: anonId } });
-    if (writer !== anonId) {
-      await userCollection.updateOne({ anonId: writer }, { $inc: { point: -3 } }, { upsert: true });
+  try {
+    // 필요한 필드만 가져오기
+    const letter = await worryLetterCollection.findOne({ _id: new ObjectId(worryId) }, { projection: { attention: 1, anonId: 1 } });
+
+    if (!letter) {
+      return res.status(404).json({ error: "해당 글을 찾을 수 없습니다." });
     }
-    const updatedLetter = await worryLetterCollection.findOne({ _id: new ObjectId(worryId) });
-    res.status(200).json({ message: "공감 취소", attentionList: updatedLetter.attention });
-  } else {
-    // 공감하지 않은 상태이면 추가
-    await worryLetterCollection.updateOne({ _id: new ObjectId(worryId) }, { $addToSet: { attention: anonId } });
+
+    const writer = letter.anonId;
+    const hasAttention = letter.attention?.includes(anonId);
+
+    // 업데이트 쿼리 만들기
+    const updateQuery = hasAttention ? { $pull: { attention: anonId } } : { $addToSet: { attention: anonId } };
+
+    // update 후 문서 바로 반환
+    const updatedLetter = await worryLetterCollection.findOneAndUpdate(
+      { _id: new ObjectId(worryId) },
+      updateQuery,
+      { returnDocument: "after" } // update 후 문서 반환
+    );
+
+    // 포인트 업데이트 (자기 자신 제외)
     if (writer !== anonId) {
-      await userCollection.updateOne({ anonId: writer }, { $inc: { point: 3 } }, { upsert: true });
+      await userCollection.updateOne({ anonId: writer }, { $inc: { point: hasAttention ? -3 : 3 } });
     }
-    const updatedLetter = await worryLetterCollection.findOne({ _id: new ObjectId(worryId) });
-    res.status(200).json({ message: "공감 처리 성공", attentionList: updatedLetter.attention });
+
+    res.status(200).json({
+      message: hasAttention ? "공감 취소" : "공감 성공",
+      attentionList: updatedLetter.value.attention,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "공감 처리 중 오류 발생" });
   }
 });
 
