@@ -247,7 +247,7 @@ app.post("/worry/:worryId/:anonId", async (req, res) => {
 
     res.status(200).json({
       message: hasAttention ? "공감 취소" : "공감 성공",
-      attentionList: updatedLetter.value.attention,
+      attentionList: updatedLetter.attention,
     });
   } catch (error) {
     console.error(error);
