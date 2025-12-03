@@ -87,7 +87,16 @@ app.get("/listening", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch entries" });
   }
 });
-
+//글 열기
+app.get("/thisWorry/:worryId", async (req, res) => {
+  try {
+    const { worryId } = req.params;
+    const letter = await worryLetterCollection.findOne({ _id: new ObjectId(worryId) });
+    res.status(200).json(letter);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch entry" });
+  }
+});
 //댓글 등록
 app.post("/worry", async (req, res) => {
   const { worryId, anonId, commentWriter, commentTxt, commentTime, likes, dislikes } = req.body;
@@ -117,7 +126,7 @@ app.post("/worry", async (req, res) => {
     res.status(500).json({ error: "댓글 추가 실패" });
   }
 });
-//해당 글의 댓글 조회
+//해당 댓글 조회
 app.get("/worry/:worryId", async (req, res) => {
   const { worryId } = req.params;
   try {
@@ -269,7 +278,7 @@ app.post("/worry/dislike/:commentId/:anonId", async (req, res) => {
 });
 
 // 공감 토글
-app.get("/worry/:worryId/:anonId", async (req, res) => {
+app.post("/worry/:worryId/:anonId", async (req, res) => {
   const { worryId, anonId } = req.params;
   const letter = await worryLetterCollection.findOne({ _id: new ObjectId(worryId) });
   const writer = letter.anonId;
